@@ -68,9 +68,9 @@ Pragmas and other modules whose entire job is a side effect are exempt; see
     _is_ the point. Defaults to the pragmas plus the usual side-effect modules:
 
     ```perl
-    strict warnings utf8 feature lib FindBin::libs parent base constant
+    strict warnings utf8 feature lib autodie parent base constant
     vars subs overload open integer bytes locale sigtrap version experimental
-    Filter::Simple Carp::Always
+    Filter::Simple Carp::Always FindBin::libs
 
     [ProhibitUnusedImports]
     allow = strict warnings My::Company::Bootstrap

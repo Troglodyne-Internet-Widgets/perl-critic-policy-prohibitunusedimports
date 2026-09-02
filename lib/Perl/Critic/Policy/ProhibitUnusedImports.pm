@@ -75,9 +75,9 @@ C<allow> below.
 Space separated list of modules that are never reported, because importing them
 I<is> the point. Defaults to the pragmas plus the usual side-effect modules:
 
-    strict warnings utf8 feature lib FindBin::libs parent base constant
+    strict warnings utf8 feature lib autodie parent base constant
     vars subs overload open integer bytes locale sigtrap version experimental
-    Filter::Simple Carp::Always
+    Filter::Simple Carp::Always FindBin::libs
 
     [ProhibitUnusedImports]
     allow = strict warnings My::Company::Bootstrap
@@ -101,9 +101,9 @@ Readonly::Scalar my $DESC => q{Unused import};
 Readonly::Scalar my $EXPL => q{Remove it, or the prerequisite it drags along outlives the code that wanted it};
 
 Readonly::Scalar my $DEFAULT_ALLOW => join ' ', qw{
-  strict warnings utf8 feature lib FindBin::libs parent base constant
+  strict warnings utf8 feature lib autodie parent base constant
   vars subs overload open integer bytes locale sigtrap version experimental
-  Filter::Simple Carp::Always
+  Filter::Simple Carp::Always FindBin::libs
 };
 
 =head2 METHODS
