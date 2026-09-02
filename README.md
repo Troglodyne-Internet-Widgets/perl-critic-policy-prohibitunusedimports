@@ -65,15 +65,20 @@ Pragmas and other modules whose entire job is a side effect are exempt; see
 - `allow`
 
     Space separated list of modules that are never reported, because importing them
-    _is_ the point. Defaults to the pragmas plus the usual side-effect modules:
+    _is_ the point. Adds to the built-in list rather than replacing it, so you name
+    only what is yours:
+
+    ```perl
+    [ProhibitUnusedImports]
+    allow = My::Company::Bootstrap
+    ```
+
+    The built-in list is the pragmas plus the usual side-effect modules:
 
     ```perl
     strict warnings utf8 feature lib autodie parent base constant
     vars subs overload open integer bytes locale sigtrap version experimental
     Filter::Simple Carp::Always FindBin::libs
-
-    [ProhibitUnusedImports]
-    allow = strict warnings My::Company::Bootstrap
     ```
 
 ## CAVEATS
@@ -91,7 +96,12 @@ unknown and the `use Module;` case is skipped rather than guessed at.
 
 ### supported\_parameters
 
-`allow`, the modules that are never reported.
+`allow`, the modules that are never reported, added to the built-in list.
+
+### initialize\_if\_enabled
+
+Folds the built-in exemptions back into whatever `allow` was configured with,
+so a user's list adds to the defaults instead of replacing them.
 
 ### default\_severity
 
