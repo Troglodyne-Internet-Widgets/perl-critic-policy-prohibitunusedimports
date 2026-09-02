@@ -73,14 +73,17 @@ C<allow> below.
 =item C<allow>
 
 Space separated list of modules that are never reported, because importing them
-I<is> the point. Defaults to the pragmas plus the usual side-effect modules:
+I<is> the point. Adds to the built-in list rather than replacing it, so you name
+only what is yours:
+
+    [ProhibitUnusedImports]
+    allow = My::Company::Bootstrap
+
+The built-in list is the pragmas plus the usual side-effect modules:
 
     strict warnings utf8 feature lib autodie parent base constant
     vars subs overload open integer bytes locale sigtrap version experimental
     Filter::Simple Carp::Always FindBin::libs
-
-    [ProhibitUnusedImports]
-    allow = strict warnings My::Company::Bootstrap
 
 =back
 
@@ -110,7 +113,12 @@ Readonly::Scalar my $DEFAULT_ALLOW => join ' ', qw{
 
 =head3 supported_parameters
 
-C<allow>, the modules that are never reported.
+C<allow>, the modules that are never reported, added to the built-in list.
+
+=head3 initialize_if_enabled
+
+Folds the built-in exemptions back into whatever C<allow> was configured with,
+so a user's list adds to the defaults instead of replacing them.
 
 =head3 default_severity
 
@@ -134,10 +142,21 @@ code, so this policy needs C<--allow-unsafe>.
 sub supported_parameters {
     return ({
         name           => 'allow',
-        description    => 'Modules that are never reported as unused.',
+        description    => 'Modules that are never reported as unused, in addition to the built-in list.',
         default_string => $DEFAULT_ALLOW,
         behavior       => 'string list',
     });
+}
+
+sub initialize_if_enabled {
+    my ( $self, $config ) = @_;
+
+    # 'string list' hands us the configured value in place of the default, and
+    # a user naming one bootstrap module of their own did not mean to start
+    # reporting `use strict`.
+    $self->{_allow}{$_} = 1 for split m/\s+/, $DEFAULT_ALLOW;
+
+    return $self->SUPER::initialize_if_enabled($config);
 }
 
 sub default_severity { return $SEVERITY_LOW }

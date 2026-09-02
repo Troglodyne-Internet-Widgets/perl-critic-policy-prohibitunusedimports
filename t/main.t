@@ -77,6 +77,15 @@ is( violations(qq{use FindBin();  ## no critic (ProhibitUnusedImports)\nprint "h
 
     is( scalar $configured->critique( \qq{use My::Bootstrap();\nmy \$x = 1;\n} ),
         0, 'a configured module is exempt' );
+
+    # Configuring `allow` says "this too", not "these instead" -- otherwise
+    # naming one bootstrap module of your own starts reporting `use strict`.
+    is( scalar $configured->critique( \qq{use strict;\nmy \$x = 1;\n} ),
+        0, 'the default exemptions survive a configured allow' );
+    is( scalar $configured->critique( \qq{use FindBin::libs;\nmy \$x = 1;\n} ),
+        0, 'and so do the non-pragma ones' );
+    is( scalar $configured->critique( \qq{use FindBin();\nprint "hi";\n} ),
+        1, 'and nothing else got exempted along the way' );
 }
 
 done_testing();
