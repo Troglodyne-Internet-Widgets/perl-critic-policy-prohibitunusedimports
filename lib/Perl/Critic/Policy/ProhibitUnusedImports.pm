@@ -77,7 +77,7 @@ I<is> the point. Defaults to the pragmas plus the usual side-effect modules:
 
     strict warnings utf8 feature lib FindBin::libs parent base constant
     vars subs overload open integer bytes locale sigtrap version experimental
-    Filter::Simple
+    Filter::Simple Carp::Always
 
     [ProhibitUnusedImports]
     allow = strict warnings My::Company::Bootstrap
@@ -103,7 +103,7 @@ Readonly::Scalar my $EXPL => q{Remove it, or the prerequisite it drags along out
 Readonly::Scalar my $DEFAULT_ALLOW => join ' ', qw{
   strict warnings utf8 feature lib FindBin::libs parent base constant
   vars subs overload open integer bytes locale sigtrap version experimental
-  Filter::Simple
+  Filter::Simple Carp::Always
 };
 
 =head2 METHODS

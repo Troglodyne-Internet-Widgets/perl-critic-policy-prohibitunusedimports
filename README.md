@@ -70,7 +70,7 @@ Pragmas and other modules whose entire job is a side effect are exempt; see
     ```perl
     strict warnings utf8 feature lib FindBin::libs parent base constant
     vars subs overload open integer bytes locale sigtrap version experimental
-    Filter::Simple
+    Filter::Simple Carp::Always
 
     [ProhibitUnusedImports]
     allow = strict warnings My::Company::Bootstrap
