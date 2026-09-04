@@ -81,7 +81,7 @@ only what is yours:
 
 The built-in list is the pragmas plus the usual side-effect modules:
 
-    strict warnings utf8 feature lib autodie parent base constant
+    strict warnings utf8 feature lib autodie parent base constant re
     vars subs overload open integer bytes locale sigtrap version experimental
     Filter::Simple Carp::Always FindBin::libs
 
@@ -104,7 +104,7 @@ Readonly::Scalar my $DESC => q{Unused import};
 Readonly::Scalar my $EXPL => q{Remove it, or the prerequisite it drags along outlives the code that wanted it};
 
 Readonly::Scalar my $DEFAULT_ALLOW => join ' ', qw{
-  strict warnings utf8 feature lib autodie parent base constant
+  strict warnings utf8 feature lib autodie parent base constant re
   vars subs overload open integer bytes locale sigtrap version experimental
   Filter::Simple Carp::Always FindBin::libs
 };

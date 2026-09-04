@@ -4,7 +4,7 @@ Perl::Critic::Policy::ProhibitUnusedImports - An import nobody uses is a depende
 
 # VERSION
 
-version 1.000
+version 1.001
 
 # Perl::Critic::Policy::ProhibitUnusedImports
 
@@ -76,7 +76,7 @@ Pragmas and other modules whose entire job is a side effect are exempt; see
     The built-in list is the pragmas plus the usual side-effect modules:
 
     ```perl
-    strict warnings utf8 feature lib autodie parent base constant
+    strict warnings utf8 feature lib autodie parent base constant re
     vars subs overload open integer bytes locale sigtrap version experimental
     Filter::Simple Carp::Always FindBin::libs
     ```
