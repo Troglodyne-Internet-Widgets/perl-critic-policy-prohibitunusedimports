@@ -140,12 +140,14 @@ code, so this policy needs C<--allow-unsafe>.
 =cut
 
 sub supported_parameters {
-    return ({
-        name           => 'allow',
-        description    => 'Modules that are never reported as unused, in addition to the built-in list.',
-        default_string => $DEFAULT_ALLOW,
-        behavior       => 'string list',
-    });
+    return (
+        {
+            name           => 'allow',
+            description    => 'Modules that are never reported as unused, in addition to the built-in list.',
+            default_string => $DEFAULT_ALLOW,
+            behavior       => 'string list',
+        }
+    );
 }
 
 sub initialize_if_enabled {
@@ -184,7 +186,7 @@ sub violates {
     return if $elem->version();
     return if $self->{_allow}{$module};
 
-    my @imports = $self->_imported_names($elem, $module);
+    my @imports = $self->_imported_names( $elem, $module );
     return if !defined $imports[0] && @imports;    # a tag we could not expand
 
     # Nothing came in, so the only reason to have loaded it is to name it.
@@ -214,9 +216,9 @@ sub _imported_names {
     return () if !@listed && _has_empty_list($elem);
 
     if (@listed) {
-        my (@names, @tags);
+        my ( @names, @tags );
         foreach my $item (@listed) {
-            $item =~ m/\A[:-]/ ? push(@tags, $item) : push(@names, $item);
+            $item =~ m/\A[:-]/ ? push( @tags, $item ) : push( @names, $item );
         }
 
         # A tag stands for a list only the module knows.  Expand it if we can
@@ -224,7 +226,7 @@ sub _imported_names {
         # caller leaves the statement alone rather than guessing.
         foreach my $tag (@tags) {
             next if $tag =~ m/\A-/;    # -norequire and friends are not imports
-            my @expanded = _tag_exports($module, $tag) or return (undef);
+            my @expanded = _tag_exports( $module, $tag ) or return (undef);
             push @names, @expanded;
         }
 
@@ -243,7 +245,7 @@ sub _tag_exports {
     return () if !_load($module);
 
     no strict 'refs';    ## no critic (ProhibitNoStrict)
-    my $tags = \%{"${module}::EXPORT_TAGS"};
+    my $tags  = \%{"${module}::EXPORT_TAGS"};
     my $names = $tags->{$tag};
     return () if ref $names ne 'ARRAY';
     return @$names;
@@ -356,11 +358,11 @@ sub _module_referenced {
     foreach my $word ( @{ $document->find('PPI::Token::Word') || [] } ) {
         next if _inside( $word, $elem );
         my $content = $word->content();
-        next if $other_modules{$content};
+        next     if $other_modules{$content};
         return 1 if $content eq $module || $content =~ m/\A\Q$module\E::/;
     }
     foreach my $symbol ( @{ $document->find('PPI::Token::Symbol') || [] } ) {
-        next if _inside( $symbol, $elem );
+        next     if _inside( $symbol, $elem );
         return 1 if $symbol->symbol() =~ m/\A[\$\@\%\&\*]\Q$module\E::/;
     }
     foreach my $name ( _interpolated_names( $document, $elem ) ) {
