@@ -83,7 +83,13 @@ The built-in list is the pragmas plus the usual side-effect modules:
 
     strict warnings utf8 feature lib autodie parent base constant re
     vars subs overload open integer bytes locale sigtrap version experimental
-    Filter::Simple Carp::Always FindBin::libs
+    Filter::Simple Carp::Always FindBin::libs Test::NoWarnings
+    Test2::Plugin::NoWarnings Mojo::Base
+
+Test::NoWarnings and Test2::Plugin::NoWarnings install a check of the warnings
+of the whole test from their import.  Mojo::Base takes flags, such as C<-base>
+and C<-signatures>, which turn on features and set C<@ISA> rather than name
+symbols.
 
 =back
 
@@ -106,7 +112,8 @@ Readonly::Scalar my $EXPL => q{Remove it, or the prerequisite it drags along out
 Readonly::Scalar my $DEFAULT_ALLOW => join ' ', qw{
   strict warnings utf8 feature lib autodie parent base constant re
   vars subs overload open integer bytes locale sigtrap version experimental
-  Filter::Simple Carp::Always FindBin::libs
+  Filter::Simple Carp::Always FindBin::libs Test::NoWarnings
+  Test2::Plugin::NoWarnings Mojo::Base
 };
 
 =head2 METHODS
