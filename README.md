@@ -4,7 +4,7 @@ Perl::Critic::Policy::ProhibitUnusedImports - An import nobody uses is a depende
 
 # VERSION
 
-version 1.001
+version 1.002
 
 # Perl::Critic::Policy::ProhibitUnusedImports
 
@@ -78,8 +78,14 @@ Pragmas and other modules whose entire job is a side effect are exempt; see
     ```perl
     strict warnings utf8 feature lib autodie parent base constant re
     vars subs overload open integer bytes locale sigtrap version experimental
-    Filter::Simple Carp::Always FindBin::libs
+    Filter::Simple Carp::Always FindBin::libs Test::NoWarnings
+    Test2::Plugin::NoWarnings Mojo::Base
     ```
+
+    Test::NoWarnings and Test2::Plugin::NoWarnings install a check of the warnings
+    of the whole test from their import.  Mojo::Base takes flags, such as `-base`
+    and `-signatures`, which turn on features and set `@ISA` rather than name
+    symbols.
 
 ## CAVEATS
 
@@ -140,6 +146,10 @@ feature.
 Current Maintainers:
 
 - George S. Baugh <teodesian@gmail.com>
+
+# CONTRIBUTOR
+
+troglodyne-robot <trogbot@troglodyne.net>
 
 # COPYRIGHT AND LICENSE
 
