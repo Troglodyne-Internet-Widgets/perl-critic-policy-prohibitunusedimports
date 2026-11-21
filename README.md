@@ -4,7 +4,7 @@ Perl::Critic::Policy::ProhibitUnusedImports - An import nobody uses is a depende
 
 # VERSION
 
-version 1.002
+version 1.003
 
 # Perl::Critic::Policy::ProhibitUnusedImports
 
@@ -86,6 +86,11 @@ Pragmas and other modules whose entire job is a side effect are exempt; see
     of the whole test from their import.  Mojo::Base takes flags, such as `-base`
     and `-signatures`, which turn on features and set `@ISA` rather than name
     symbols.
+
+    An import of `import` or `unimport`, as in `use Exporter qw{import}`, is
+    never reported, whatever the module.  perl calls those methods when another
+    file uses or unuses this package, so the file that imports them never calls
+    them.
 
 ## CAVEATS
 
