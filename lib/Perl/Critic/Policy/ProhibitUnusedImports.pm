@@ -3,12 +3,14 @@ package Perl::Critic::Policy::ProhibitUnusedImports;
 # ABSTRACT: An import nobody uses is a dependency nobody knew they had.
 
 use strict;
-use warnings;
+use warnings FATAL => 'all';
+no autovivification;
 
 use 5.014;
 
 use re '/aa';
 
+use List::Util qw{any};
 use Readonly;
 
 use Perl::Critic::Utils qw{ :severities :classification :ppi };
@@ -168,7 +170,7 @@ sub initialize_if_enabled {
     # 'string list' hands us the configured value in place of the default, and
     # a user naming one bootstrap module of their own did not mean to start
     # reporting `use strict`.
-    $self->{_allow}{$_} = 1 for split m/\s+/, $DEFAULT_ALLOW;
+    $self->{_allow}{$_} = 1 for split m/\s+/xs, $DEFAULT_ALLOW;
 
     return $self->SUPER::initialize_if_enabled($config);
 }
@@ -194,7 +196,7 @@ sub violates {
     # `use 5.014` and friends are a version check, not an import.  PPI gives
     # those an empty module and a version, rather than no module at all.
     my $module = $elem->module();
-    return if !defined $module || !length $module;
+    return if ( $module // q{} ) eq q{};
     return if $elem->version();
     return if $self->{_allow}{$module};
 
@@ -208,7 +210,7 @@ sub violates {
     return if !@imports;
 
     # perl calls these when another file uses this package, so no call is written.
-    return if grep { $_ eq 'import' || $_ eq 'unimport' } @imports;
+    return if any { $_ eq 'import' || $_ eq 'unimport' } @imports;
 
     my $used = _used_names( $document, $elem );
     foreach my $name (@imports) {
@@ -233,14 +235,14 @@ sub _imported_names {
     if (@listed) {
         my ( @names, @tags );
         foreach my $item (@listed) {
-            $item =~ m/\A[:-]/ ? push( @tags, $item ) : push( @names, $item );
+            $item =~ m/\A[:-]/xs ? push( @tags, $item ) : push( @names, $item );
         }
 
         # A tag stands for a list only the module knows.  Expand it if we can
         # load the module, and say so with a single undef if we cannot, so the
         # caller leaves the statement alone rather than guessing.
         foreach my $tag (@tags) {
-            next if $tag =~ m/\A-/;    # -norequire and friends are not imports
+            next if $tag =~ m/\A-/xs;    # -norequire and friends are not imports
             my @expanded = _tag_exports( $module, $tag ) or return (undef);
             push @names, @expanded;
         }
@@ -256,11 +258,10 @@ sub _imported_names {
 sub _tag_exports {
     my ( $module, $tag ) = @_;
 
-    $tag =~ s/\A://;
+    $tag =~ s/\A://xs;
     return () if !_load($module);
 
-    no strict 'refs';    ## no critic (ProhibitNoStrict)
-    my $tags  = \%{"${module}::EXPORT_TAGS"};
+    my $tags  = do { no strict 'refs'; \%{"${module}::EXPORT_TAGS"} };
     my $names = $tags->{$tag};
     return () if ref $names ne 'ARRAY';
     return @$names;
@@ -268,7 +269,7 @@ sub _tag_exports {
 
 sub _strip_sigil {
     my ($name) = @_;
-    $name =~ s/\A[\$\@\%\&\*]//;
+    $name =~ s/\A[\$\@\%\&\*]//xs;
     return $name;
 }
 
@@ -294,7 +295,7 @@ sub _literal_arguments {
         }
     }
 
-    return grep { defined $_ && length $_ } @args;
+    return grep { ( $_ // q{} ) ne q{} } @args;
 }
 
 sub _has_empty_list {
@@ -313,15 +314,15 @@ sub _default_exports {
 
     return () if !_load($module);
 
-    no strict 'refs';    ## no critic (ProhibitNoStrict)
-    return @{"${module}::EXPORT"};
+    my $exports = do { no strict 'refs'; \@{"${module}::EXPORT"} };
+    return @{$exports};
 }
 
 sub _load {
     my ($module) = @_;
 
     my $path = $module;
-    $path =~ s{::}{/}g;
+    $path =~ s{::}{/}gxs;
     $path .= '.pm';
 
     return 1 if $INC{$path};
@@ -338,18 +339,18 @@ sub _used_names {
     foreach my $word ( @{ $document->find('PPI::Token::Word') || [] } ) {
         next if _inside( $word, $elem );
         my $name = $word->content();
-        $name =~ s/\A.*:://;
+        $name =~ s/\A.*:://xs;
         $used{$name} = 1;
     }
     foreach my $symbol ( @{ $document->find('PPI::Token::Symbol') || [] } ) {
         next if _inside( $symbol, $elem );
         my $name = $symbol->symbol();
-        $name =~ s/\A[\$\@\%\&\*]//;
-        $name =~ s/\A.*:://;
+        $name =~ s/\A[\$\@\%\&\*]//xs;
+        $name =~ s/\A.*:://xs;
         $used{$name} = 1;
     }
     foreach my $name ( _interpolated_names( $document, $elem ) ) {
-        $name =~ s/\A.*:://;
+        $name =~ s/\A.*:://xs;
         $used{$name} = 1;
     }
 
@@ -367,21 +368,21 @@ sub _module_referenced {
     foreach my $include ( @{ $document->find('PPI::Statement::Include') || [] } ) {
         next if $include == $elem;
         my $name = $include->module();
-        $other_modules{$name} = 1 if defined $name && length $name;
+        $other_modules{$name} = 1 if ( $name // q{} ) ne q{};
     }
 
     foreach my $word ( @{ $document->find('PPI::Token::Word') || [] } ) {
         next if _inside( $word, $elem );
         my $content = $word->content();
         next     if $other_modules{$content};
-        return 1 if $content eq $module || $content =~ m/\A\Q$module\E::/;
+        return 1 if $content eq $module || $content =~ m/\A\Q$module\E::/xs;
     }
     foreach my $symbol ( @{ $document->find('PPI::Token::Symbol') || [] } ) {
         next     if _inside( $symbol, $elem );
-        return 1 if $symbol->symbol() =~ m/\A[\$\@\%\&\*]\Q$module\E::/;
+        return 1 if $symbol->symbol() =~ m/\A[\$\@\%\&\*]\Q$module\E::/xs;
     }
     foreach my $name ( _interpolated_names( $document, $elem ) ) {
-        return 1 if $name =~ m/\A\Q$module\E::/;
+        return 1 if $name =~ m/\A\Q$module\E::/xs;
     }
 
     return 0;
@@ -390,8 +391,6 @@ sub _module_referenced {
 # Names that only ever appear inside an interpolating string.  PPI hands those
 # back as one token, so "$FindBin::Bin/../lib" contains no Symbol to find and
 # the import that provided it reads as unused.
-Readonly::Scalar my $INTERPOLATED_RX => qr/ [\$\@] \{? (\w+ (?: ::\w+ )*) /x;
-
 sub _interpolated_names {
     my ( $document, $elem ) = @_;
 
@@ -409,7 +408,7 @@ sub _interpolated_names {
         foreach my $token ( @{ $document->find($class) || [] } ) {
             next if _inside( $token, $elem );
             my $content = $token->can('heredoc') ? join( '', $token->heredoc() ) : $token->content();
-            push @names, $content =~ m/$INTERPOLATED_RX/g;
+            push @names, $content =~ m/ [\$\@] \{? (\w+ (?: ::\w+ )*) /gxs;
         }
     }
 
